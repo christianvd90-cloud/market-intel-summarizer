@@ -13,27 +13,22 @@ Servicio API que interpreta datos de mercado de futuros cripto en tiempo real (f
 
 ## Instalacion
 
-\`\`\`bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-# Edita .env con tu ANTHROPIC_API_KEY
-\`\`\`
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    cp .env.example .env
+
+Edita .env con tu ANTHROPIC_API_KEY antes de continuar.
 
 ## Uso local
 
-\`\`\`bash
-uvicorn app.main:app --reload
-\`\`\`
+    uvicorn app.main:app --reload
 
 Documentacion interactiva: http://127.0.0.1:8000/docs
 
 ## Uso con Docker
 
-\`\`\`bash
-docker compose up --build
-\`\`\`
+    docker compose up --build
 
 ## Seguridad
 
@@ -41,6 +36,6 @@ Todas las credenciales se manejan via variables de entorno (.env, excluido de Gi
 
 ## Estado del proyecto
 
-Fase 1: servicio funcional con datos mock. Completa.
+Fase 1: servicio funcional con LLM integrado, probado end-to-end. Completa.
 Fase 2: Docker + CI/CD con GitHub Actions. Completa.
 Fase 3 (siguiente): conexion a datos reales de produccion.
