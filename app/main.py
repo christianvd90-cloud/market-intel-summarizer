@@ -1,13 +1,15 @@
 """
 Market Intelligence Summarizer - API FastAPI
 """
+
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException
-from app.models import MarketSummaryResponse
-from app.market_data import load_latest_snapshot
-from app.llm_client import get_market_interpretation
+from fastapi import FastAPI, HTTPException  # noqa: E402
+from app.models import MarketSummaryResponse  # noqa: E402
+from app.market_data import load_latest_snapshot  # noqa: E402
+from app.llm_client import get_market_interpretation  # noqa: E402
 
 app = FastAPI(
     title="Market Intelligence Summarizer",
