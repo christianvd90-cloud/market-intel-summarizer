@@ -25,10 +25,17 @@ def health_check():
 
 @app.get("/market-summary/{symbol}", response_model=MarketSummaryResponse)
 def market_summary(symbol: str):
+    symbol_clean = symbol.upper()
     try:
-        snapshot = load_latest_snapshot(symbol.upper())
+        snapshot = load_latest_snapshot(symbol_clean)
         return get_market_interpretation(snapshot)
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No hay datos disponibles hoy para '{symbol_clean}'. "
+                   f"Verifica que el simbolo sea correcto y que el monitor este activo.",
+        )
     except NotImplementedError as e:
         raise HTTPException(status_code=501, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generando resumen: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generando resumen: {type(e).__name__}")
