@@ -1,6 +1,6 @@
 # market-intel-summarizer
 
-Sistema de trading algorítmico para Binance construido mediante investigación cuantitativa iterativa. El repositorio contiene cuatro sistemas en producción (paper), la infraestructura de recolección de datos de microestructura, y 183 conclusiones documentadas sobre qué funciona y qué no en cripto.
+Sistema de trading algorítmico para Binance construido mediante investigación cuantitativa iterativa. Este repositorio documenta el proceso completo — incluyendo los fracasos — y expone públicamente la metodología de validación y la infraestructura de recolección de datos. El código de producción de los sistemas validados se distribuye por niveles de acceso (ver sección [Acceso al código](#acceso-al-código)).
 
 > **Aviso:** Los resultados de backtesting son simulaciones con costos reales (comisiones, funding, slippage). No son garantía de rendimiento futuro. Todo el sistema opera en modo paper hasta validación completa en vivo.
 
@@ -25,9 +25,44 @@ Sistema de trading algorítmico para Binance construido mediante investigación 
 
 ---
 
+## Acceso al código
+
+El proyecto tiene tres niveles de acceso. Esta distinción es explícita y deliberada — el código de producción es el resultado de cientos de horas de investigación y validación, y se distribuye de forma controlada.
+
+### 🟢 Público — en este repositorio
+
+| Archivo | Descripción |
+|---------|-------------|
+| `orderbook_monitor_v4.py` | Monitor de microestructura (OB + OI + funding + basis) |
+| `backtesting_v29.py` | Motor de backtesting CA (versión final, sin parámetros optimizados) |
+| `detector_giros_funding_wf_v1.py` | Detector walk-forward de giros de funding (línea base) |
+| `requirements.txt` | Dependencias del proyecto |
+| `docs/` | Las 183 conclusiones documentadas en Markdown |
+
+### 🔵 Acceso técnico — tier $29–49/mes
+
+Código de producción de los sistemas validados, parámetros exactos, instaladores launchd y actualizaciones cuando hay nuevas validaciones walk-forward.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `paper_trading_bot.py` | CA BTC — trend following 1H (producción, paper) |
+| `paper_trading_bot_inj_v2.py` | CA INJ — trend following 1H (producción, paper) |
+| `scalping_bot_btc.py` | SCALPR BTC V7 — scalping 15m |
+| `scalping_bot_inj.py` | SCALPR INJ V7 — scalping 15m |
+| `funding_paper_bot_v2.py` | Funding arb (leverage configurable, multi-activo preparado) |
+| `instalar_*.py` | Instaladores launchd para cada servicio |
+
+### 🟣 Investigación en vivo — tier $99–149/mes
+
+Acceso al proceso de investigación en curso: experimentos antes de ser publicados, sesiones de validación cada dos semanas, dashboard de P&L en tiempo real del funding bot, y canal directo para preguntas técnicas.
+
+> Para información sobre acceso a los tiers técnico y de investigación: [christianvd90@gmail.com](mailto:christianvd90@gmail.com)
+
+---
+
 ## Sistemas en producción (paper)
 
-Cuatro servicios corriendo en `launchd` de macOS:
+Tres servicios corriendo en `launchd` de macOS:
 
 ```
 com.scalpr.btc.live      SCALPR BTC — scalping spot paper
@@ -50,6 +85,7 @@ Estrategia E6: seis condiciones simultáneas en tres marcos temporales (1D / 4H 
 | Capital paper | $500 | $283.57 |
 
 Walk-forward (35 meses, ventanas OOS de 2 meses): **R² ≥ 75%, score RoMaD × PF**.
+*Código y parámetros exactos disponibles en el tier técnico.*
 
 ### SCALPR — Scalping (BTC/USDT + INJ/USDT, 15m)
 
@@ -62,6 +98,8 @@ Walk-forward (35 meses, ventanas OOS de 2 meses): **R² ≥ 75%, score RoMaD × 
 | Horas bloqueadas | 4,8,11,14,15,17 | 0,1,5,16 |
 | Días bloqueados | lun, dom | lun, mar |
 | Mejor régimen | VOLÁTIL (70% WR) | — |
+
+*Código y parámetros exactos disponibles en el tier técnico.*
 
 ### Funding arb delta-neutral (BTC/USDT)
 
@@ -77,10 +115,11 @@ Posición spot long + perp short simultáneas. Cobra el funding rate tres veces 
 | Basis que liquidaría a 2x | 49.5% (histórico max: 0.29%) |
 
 ETH validada con perfil idéntico (+7.9% CAGR, 84% positivo). SOL descartada (DD -2.59%).
+*Bot v2 con leverage configurable (1x–5x) disponible en el tier técnico.*
 
 ---
 
-## Infraestructura de recolección
+## Infraestructura de recolección — disponible públicamente
 
 `orderbook_monitor_v4.py` captura cada 5 minutos para BTC, ETH y SOL:
 
@@ -112,11 +151,13 @@ Los datos se guardan en CSV diario en Google Drive. La recolección continua emp
 
 - **El alpha real no es direccional — es estructural.** Cobrar la prima que los longs sobreapalancados pagan en los perpetuos. La contraparte existe y es identificable.
 
-- **El basis spot-perp es el predictor más fuerte de giros de funding** (separación 0.334, la segunda variable más útil tras el funding_actual). No la volatilidad sola (recall 5% OOS) ni la caída de precio (0.148).
+- **El basis spot-perp es el predictor más fuerte de giros de funding** (separación 0.334, segunda variable más útil tras el funding_actual). No la volatilidad sola (recall 5% OOS) ni la caída de precio (0.148).
 
-- **El detector de giros combinado supera al azar con p<0.001.** 48% de recall OOS con permutación vs 45% de TimesFM. Impacto marginal (+0.3–0.8% CAGR) pero estadísticamente real. Plan B: no integrar hasta tener datos de OI/basis reales.
+- **El detector de giros combinado supera al azar con p<0.001.** 48% de recall OOS con permutación vs 45% de TimesFM. Impacto marginal (+0.3–0.8% CAGR) pero estadísticamente real.
 
 - **El break-even prematuro colapsa el sistema.** BE antes de TP1 genera una "zona de exposición a reversión". BE@TP1 y sin-BE son equivalentes y seguros. Cualquier punto intermedio es peligroso.
+
+*Las 183 conclusiones completas están en `docs/` (acceso público).*
 
 ---
 
@@ -133,27 +174,7 @@ Todo cambio al sistema debe pasar por el mismo proceso antes de adopción:
 
 ---
 
-## Estructura del repositorio
-
-```
-├── paper_trading_bot.py          CA BTC (producción, paper)
-├── paper_trading_bot_inj_v2.py   CA INJ (producción, paper)
-├── scalping_bot_btc.py           SCALPR BTC V7
-├── scalping_bot_inj.py           SCALPR INJ V7
-├── funding_paper_bot_v2.py       Funding arb (leverage configurable, multi-activo listo)
-├── orderbook_monitor_v4.py       Monitor microestructura (OB+OI+funding+basis)
-├── detector_giros_funding_wf_v1.py  Detector walk-forward (línea base 48% OOS)
-├── backtesting_v29.py            Backtesting CA (versión final)
-├── gemini/data/                  Logs, estados JSON, CSVs locales
-└── docs/
-    ├── 100_CONCLUSIONES_PROYECTO.md
-    ├── 33_CONCLUSIONES_10_BOTS.md
-    └── 50_CONCLUSIONES_FUNDING_ALPHA.md
-```
-
----
-
-## Instalación
+## Instalación — componentes públicos
 
 ```bash
 # Requisitos: Python 3.9+, macOS (launchd)
@@ -167,10 +188,11 @@ pip install -r requirements.txt
 cp .env.example .env
 # Editar .env con las keys de Binance y el token de Telegram
 
-# Servicios launchd (ver instaladores individuales)
+# Monitor de microestructura (incluido en este repo)
 python instalar_orderbook_launchd_v4.py
-python instalar_funding_launchd.py
 ```
+
+Los instaladores de los sistemas CA, SCALPR y funding arb están disponibles en el tier técnico.
 
 ---
 
@@ -183,6 +205,8 @@ python instalar_funding_launchd.py
 | ETH funding arb en paralelo | mismo alpha, capital adicional | ~30 fundings BTC confirmados | jul 2026 |
 | Imbalance OB como predictor | imbalance extremo precede movimiento | miles de lecturas a 5min | ago 2026 |
 | Mom/ATR% para SCALPR | filtrar señales con movimiento pequeño relativo a volatilidad | datos actuales | pendiente |
+
+Los resultados de estas investigaciones se publican primero en el tier de investigación en vivo, y posteriormente en `docs/` cuando están validados.
 
 ---
 
