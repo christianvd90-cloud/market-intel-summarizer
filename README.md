@@ -70,7 +70,8 @@ Fase 1: servicio funcional con LLM integrado. Completa.
 Fase 2: Docker + CI/CD con GitHub Actions. Completa.
 Fase 3: conexion a datos reales de produccion (order book via Google Drive CSV). Completa.
 Fase 4: notifier de Telegram, orquestacion multi-servicio con Docker Compose. Completa.
-Fase 5 (siguiente): capa de deteccion de anomalias (estadistica/ML) antes de notificar, para reducir ruido.
+Fase 5: correccion de price_change_24h_pct (antes hardcodeado en None, ahora calculado desde historico real de CSV). Esto permite que el LLM corrobore señales extremas del order book con datos de precio reales en vez de operar sin esa verificacion. Completa.
+Fase 6 (siguiente): capa de deteccion de anomalias (estadistica/ML) antes de notificar, para reducir ruido.
 
 ## Contexto
 
